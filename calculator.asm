@@ -6,11 +6,6 @@ thankDisplay:	.asciiz "Thank you."
 overflowCase: .asciiz "I'm sorry, that would overflow."
 divZeroCase: .asciiz "I'm sorry, you cannot divide by 0."
 nLine: .asciiz "\n"
-
-addSign: .asciiz  "+"
-subSign: .asciiz  "-"
-multSign: .asciiz "*"
-divSign: .asciiz  "/"
 remainder: .asciiz "R"
 
 .text
