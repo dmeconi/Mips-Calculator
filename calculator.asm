@@ -48,8 +48,10 @@ main:
 	li $t0, '+'		#loads char (+)
 	beq $s1,$t0,Add		#branches if condition is true is +
 	
+	li $t0, '-'		#loads char(-)
+	beq $s1,$t0,Sub		#branches if condition is true is -
 	
-	li	$v0, 10		# exit cleanly
+	li $v0, 10		# exit cleanly
 	syscall
 	
 Add:
