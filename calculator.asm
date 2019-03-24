@@ -51,12 +51,39 @@ main:
 	li $t0, '-'		#loads char(-)
 	beq $s1,$t0,Sub		#branches if condition is true is -
 	
+	li $t0, '*'		#loads char(-)
+	beq $s1,$t0,Multi		#branches if condition is true is *
+	
+	li $t0, '/'		#loads char(-)
+	beq $s1,$t0,Divide		#branches if condition is true is /
+	
+
+	Terminate:
 	li $v0, 10		# exit cleanly
 	syscall
 	
 Add:
-	add $s1,$s0,$s2
-
+	#check for over flow
+	addu $t0,$s0,$s2
+	xor  $t3,$t0,$s0
+	bltz $t3,overflow
+	
+	#if no overflow detected
+	jal addNoOverflow
+	
+	#now prints results
+	
+	j Terminate
+	
+	addNoOverflow:	
+	add 	$t0, $s0, $s2		# adds the 2 values and stick them into $t0
+	li 	$v0, 0			#indictating no overflow	
+	move	$v1, $t0		# stick in $v0
+	jr	$ra			# return!
 Sub:
 Multi:
 Divide:
+
+overflow:
+	li $v0,1 #Error has been detected so 1 must be placed in
+	j Terminate
