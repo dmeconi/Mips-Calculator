@@ -1,5 +1,5 @@
-.data
 
+.data
 intAsk:	.asciiz "Please enter an integer: "
 opAsk:	.asciiz "Please enter an operation (+,-,*,/): "
 thankDisplay:	.asciiz "Thank you."
@@ -64,13 +64,17 @@ main:
 	
 Add:
 	#check for over flow
+	xor $t2,$s0,$s2		#bitwise op to see if signs are different
+	bltz $t2, addCase1	#different signs will never overflow if its less than it will not overflow
+	
 	addu $t0,$s0,$s2
 	xor  $t3,$t0,$s0
 	bltz $t3,overflow
 	
 	#if no overflow detected
+	addCase1:
 	jal addNoOverflow
-	move $t0,$v0		#
+	move $t0,$v0		#gets value to be printed for $t0
 	#now prints results
 	
 	#Printing thank you message
@@ -207,16 +211,11 @@ Sub:
 	jr $ra
 Multi:
 	mult $s0,$s2		#multiplies the two numbers
-	mfhi $t0		#loads hi into register $t0
+	mflo $t0		#loads hi into register $t0
 	
-	#All possible values hi can be are loaded
-	li	$t1, 0x00000000	#All zero hi != overflow Pos
-	li	$t2, 0x11111111 #If Multi is Negative from * 
-	
-	beq	$t0, $t1, multCase1
-	beq	$t0, $t2, multCase1
-	
-	j overflow
+	xor	$t1,$s0,$s2	#checking to see if different signs
+	bltz	$t1, difSigns	#evalutes if signs are different if they are then it goes to different signs
+	bltz	$t0, overflow   #if result is less than zero it means same signs resulted in a non-positive number which signifies a overflow
 	
 	multCase1:
 	
@@ -281,6 +280,15 @@ Multi:
 		mflo	$t0		#loads 32 bit lo
 		move	$v0,$t0		#puts it in return arg
 		jr	$ra		#return
+	difSigns:
+		mfhi	$t0			#loads the hi
+		li	$t1, 0x00000000		# checks hi values to make sure it didnt overflow
+		li	$t2, 0xffffffff		# checking negative
+		
+		beq	$t0, $t1, multCase1	#branches if $t0 is positive
+		beq	$t0, $t2, multCase1	#branches if $t0 is negative
+		#else overflow
+		j overflow
 Divide:
 	beqz	$s2, zeroDiv		#checks to see if div by zero
 	
@@ -360,7 +368,7 @@ Divide:
 	
 	#printing remainder
 	li	$v0, 1		#1 is syscall number needed to print int
-	mfhi	$a0
+	mfhi	$a0		#loads hi which is remainder for division
 	syscall
 	
 	j	Terminate
@@ -371,14 +379,14 @@ Divide:
 	move	$v0, $t0		#moves $t0 into return value as in instructions
 	jr	$ra			# return!
 	zeroDiv:
-	li $v0, 4
-	la $a0, divZeroCase
+	li $v0, 4			#syscall code for printing string
+	la $a0, divZeroCase		#loads string to be printed
 	syscall 
 	j Terminate
 
 overflow:
-	li $v0, 4
-	la $a0, overflowCase
-	syscall 
+	li $v0, 4		#syscall code for printing string
+	la $a0, overflowCase	#loads string to be printed
+	syscall 		#prints string
 	li $v0,1 #Error has been detected so 1 must be placed in
 	j Terminate
